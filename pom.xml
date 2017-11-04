@@ -26,7 +26,7 @@ under the License.
     <groupId>org.apache.maven.doxia</groupId>
     <artifactId>doxia-tools</artifactId>
     <version>30</version>
-    <relativePath>../../../pom/maven/doxia-tools/pom.xml</relativePath>
+    <relativePath>../../pom/maven/doxia-tools/pom.xml</relativePath>
   </parent>
 
   <artifactId>doxia-linkcheck</artifactId>
@@ -36,14 +36,19 @@ under the License.
   <description>Doxia linkcheck is a tool to check the validity of links.</description>
 
   <scm>
-    <connection>scm:svn:http://svn.apache.org/repos/asf/maven/doxia/doxia-tools/trunk/doxia-linkcheck</connection>
-    <developerConnection>scm:svn:https://svn.apache.org/repos/asf/maven/doxia/doxia-tools/trunk/doxia-linkcheck</developerConnection>
-    <url>http://svn.apache.org/viewvc/maven/doxia/doxia-tools/trunk/doxia-linkcheck</url>
+    <connection>scm:git:https://gitbox.apache.org/repos/asf/maven-doxia-linkcheck.git</connection>
+    <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/maven-doxia-linkcheck.git</developerConnection>
+    <url>https://github.com/apache/maven-doxia-linkcheck/tree/${project.scm.tag}</url>
+    <tag>HEAD</tag>
   </scm>
   <issueManagement>
     <system>jira</system>
     <url>https://issues.apache.org/jira/browse/DOXIATOOLS/component/12326003</url>
   </issueManagement>
+  <ciManagement>
+    <system>Jenkins</system>
+    <url>https://builds.apache.org/view/M-R/view/Maven/job/doxia-linkcheck/</url>
+  </ciManagement>
   <distributionManagement>
     <site>
       <id>apache.website</id>
