@@ -23,7 +23,6 @@ package org.apache.maven.doxia.linkcheck;
  * Encapsulate a Link check exception.
  *
  * @author <a href="mailto:vincent.siveton@gmail.com">Vincent Siveton</a>
- * @version $Id$
  * @since 1.0
  */
 public class LinkCheckException

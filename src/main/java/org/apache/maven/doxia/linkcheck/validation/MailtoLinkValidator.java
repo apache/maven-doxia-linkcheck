@@ -26,7 +26,6 @@ import org.apache.maven.doxia.linkcheck.model.LinkcheckFileResult;
  *
  * @author <a href="mailto:bwalding@apache.org">Ben Walding</a>
  * @author <a href="mailto:aheritier@apache.org">Arnaud Heritier</a>
- * @version $Id$
  */
 public final class MailtoLinkValidator
     implements LinkValidator
@@ -36,12 +35,14 @@ public final class MailtoLinkValidator
         new LinkValidationResult( LinkcheckFileResult.VALID_LEVEL, false, "" );
 
     /** {@inheritDoc} */
+    @Override
     public LinkValidationResult validateLink( LinkValidationItem lvi )
     {
         return LVR;
     }
 
     /** {@inheritDoc} */
+    @Override
     public Object getResourceKey( LinkValidationItem lvi )
     {
         if ( lvi.getLink().indexOf( '@' ) != -1 )

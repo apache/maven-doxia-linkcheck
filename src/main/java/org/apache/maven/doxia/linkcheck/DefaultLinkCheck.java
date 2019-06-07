@@ -26,7 +26,6 @@ import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.Arrays;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.logging.Log;
@@ -59,7 +58,6 @@ import org.codehaus.plexus.util.WriterFactory;
  * @author <a href="mailto:carlos@apache.org">Carlos Sanchez</a>
  * @author <a href="mailto:aheritier@apache.org">Arnaud Heritier</a>
  * @author <a href="mailto:vincent.siveton@gmail.com">Vincent Siveton</a>
- * @version $Id$
  */
 @Component( role = LinkCheck.class )
 public final class DefaultLinkCheck
@@ -126,72 +124,84 @@ public final class DefaultLinkCheck
     // ----------------------------------------------------------------------
 
     /** {@inheritDoc} */
+    @Override
     public void setBasedir( File base )
     {
         this.basedir = base;
     }
 
     /** {@inheritDoc} */
+    @Override
     public void setBaseURL( String url )
     {
         this.baseURL = url;
     }
 
     /** {@inheritDoc} */
+    @Override
     public void setExcludedHttpStatusErrors( int[] excl )
     {
         this.excludedHttpStatusErrors = excl;
     }
 
     /** {@inheritDoc} */
+    @Override
     public void setExcludedHttpStatusWarnings( int[] excl )
     {
         this.excludedHttpStatusWarnings = excl;
     }
 
     /** {@inheritDoc} */
+    @Override
     public void setExcludedLinks( String[] excl )
     {
         this.excludedLinks = excl;
     }
 
     /** {@inheritDoc} */
+    @Override
     public void setExcludedPages( String[] excl )
     {
         this.excludedPages = excl;
     }
 
     /** {@inheritDoc} */
+    @Override
     public void setHttp( HttpBean http )
     {
         this.http = http;
     }
 
     /** {@inheritDoc} */
+    @Override
     public void setLinkCheckCache( File cacheFile )
     {
         this.linkCheckCache = cacheFile;
     }
 
     /** {@inheritDoc} */
+    @Override
     public void setOnline( boolean onLine )
     {
         this.online = onLine;
     }
 
     /** {@inheritDoc} */
+    @Override
     public void setReportOutput( File file )
     {
         this.reportOutput = file;
     }
 
     /** {@inheritDoc} */
+    @Override
     public void setReportOutputEncoding( String encoding )
     {
         this.reportOutputEncoding = encoding;
     }
 
     /** {@inheritDoc} */
+    @Override
     public LinkcheckModel execute()
         throws LinkCheckException
     {
@@ -264,6 +274,7 @@ public final class DefaultLinkCheck
     }
 
     /** {@inheritDoc} */
+    @Override
     public void setEncoding( String encoding )
     {
         if ( StringUtils.isEmpty( encoding ) )
@@ -315,7 +326,6 @@ public final class DefaultLinkCheck
      */
     private String getExcludedPages()
     {
-        @SuppressWarnings( "unchecked" )
         LinkedList<String> patternList = new LinkedList<String>( FileUtils.getDefaultExcludesAsList() );
 
         if ( excludedPages != null )
@@ -414,11 +424,10 @@ public final class DefaultLinkCheck
      *
      * @param base the base directory to traverse.
      */
-    @SuppressWarnings( "unchecked" )
     private void findAndCheckFiles( File base, LinkcheckModel model )
         throws IOException
     {
-        for ( File file : (List<File>) FileUtils.getFiles( base, getIncludedPages(), getExcludedPages() ) )
+        for ( File file : FileUtils.getFiles( base, getIncludedPages(), getExcludedPages() ) )
         {
             checkFile( file, model );
         }

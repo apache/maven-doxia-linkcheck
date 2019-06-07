@@ -22,7 +22,6 @@ package org.apache.maven.doxia.linkcheck.validation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.maven.doxia.linkcheck.model.LinkcheckFileResult;
-import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.SelectorUtils;
 import org.codehaus.plexus.util.StringUtils;
 
@@ -50,7 +49,6 @@ import java.util.Map;
  * @author <a href="mailto:carlos@apache.org">Carlos Sanchez</a>
  * @author <a href="mailto:aheritier@apache.org">Arnaud Heritier</a>
  * @author <a href="mailto:vincent.siveton@gmail.com">Vincent Siveton</a>
- * @version $Id$
  */
 public class LinkValidatorManager
     implements Serializable
@@ -62,13 +60,13 @@ public class LinkValidatorManager
     private static final Log LOG = LogFactory.getLog( LinkValidatorManager.class );
 
     /** validators. */
-    private List<LinkValidator> validators = new LinkedList<LinkValidator>();
+    private List<LinkValidator> validators = new LinkedList<>();
 
     /** excludes. */
     private String[] excludedLinks = new String[0];
 
     /** cache. */
-    private Map<Object, LinkValidationResult> cache = new HashMap<Object, LinkValidationResult>();
+    private Map<Object, LinkValidationResult> cache = new HashMap<>();
 
     /**
      * Returns the list of validators.
@@ -203,11 +201,9 @@ public class LinkValidatorManager
             return;
         }
 
-        ObjectInputStream is = null;
-        try
+        
+        try ( ObjectInputStream is = new ObjectInputStream( new FileInputStream( cacheFile ) ) )
         {
-            is = new ObjectInputStream( new FileInputStream( cacheFile ) );
-
             this.cache = (Map<Object, LinkValidationResult>) is.readObject();
 
             if ( LOG.isDebugEnabled() )
@@ -225,10 +221,6 @@ public class LinkValidatorManager
             {
                 LOG.error( "Unable to load the cache: " + cacheFile.getAbsolutePath(), e );
             }
-        }
-        finally
-        {
-            IOUtil.close( is );
         }
     }
 
@@ -277,16 +269,10 @@ public class LinkValidatorManager
             dir.mkdirs();
         }
 
-        ObjectOutputStream os = null;
-        try
+        
+        try ( ObjectOutputStream os = new ObjectOutputStream( new FileOutputStream( cacheFile ) ) )
         {
-            os = new ObjectOutputStream( new FileOutputStream( cacheFile ) );
-
             os.writeObject( persistentCache );
-        }
-        finally
-        {
-            IOUtil.close( os );
         }
     }
 
@@ -311,7 +297,7 @@ public class LinkValidatorManager
                         + this.cache.get( resourceKey ) + "]." );
                 }
 
-                return (LinkValidationResult) this.cache.get( resourceKey );
+                return this.cache.get( resourceKey );
             }
         }
 

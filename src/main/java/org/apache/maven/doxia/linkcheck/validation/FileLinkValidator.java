@@ -35,7 +35,6 @@ import org.codehaus.plexus.util.WriterFactory;
  *
  * @author <a href="mailto:bwalding@apache.org">Ben Walding</a>
  * @author <a href="mailto:aheritier@apache.org">Arnaud Heritier</a>
- * @version $Id$
  */
 public final class FileLinkValidator
     implements LinkValidator
@@ -55,6 +54,7 @@ public final class FileLinkValidator
     }
 
     /** {@inheritDoc} */
+    @Override
     public LinkValidationResult validateLink( LinkValidationItem lvi )
     {
         File f = getFile( lvi );
@@ -68,6 +68,7 @@ public final class FileLinkValidator
     }
 
     /** {@inheritDoc} */
+    @Override
     public Object getResourceKey( LinkValidationItem lvi )
     {
         String link = lvi.getLink();
@@ -150,19 +151,13 @@ public final class FileLinkValidator
      */
     private static String read( File f, String encoding )
     {
-        Reader reader = null;
-        try
+        try ( Reader reader = ReaderFactory.newReader( f, encoding ) )
         {
-            reader = ReaderFactory.newReader( f, encoding );
             return IOUtil.toString( reader );
         }
         catch ( IOException e )
         {
             // nop;
-        }
-        finally
-        {
-            IOUtil.close( reader );
         }
 
         return null;

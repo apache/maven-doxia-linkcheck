@@ -30,7 +30,6 @@ import java.util.Map;
 /**
  * @author Ben Walding
  * @author <a href="mailto:carlos@apache.org">Carlos Sanchez</a>
- * @version $Id: LinkCheckTest.java 800044 2009-08-02 12:28:50Z vsiveton $
  */
 public class AnchorLinkTest
     extends PlexusTestCase

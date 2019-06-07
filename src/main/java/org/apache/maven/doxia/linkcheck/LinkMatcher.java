@@ -41,7 +41,6 @@ import org.codehaus.plexus.util.ReaderFactory;
  * </pre>
  *
  * @author <a href="mailto:mac@apache.org">Ignacio G. Mac Dowell </a>
- * @version $Id$
  */
 class LinkMatcher
 {
@@ -51,7 +50,7 @@ class LinkMatcher
                          Pattern.CASE_INSENSITIVE );
 
     /** No need to create a new object each time a file is processed. Just clear it. */
-    private static final Set<String> LINK_LIST = new TreeSet<String>();
+    private static final Set<String> LINK_LIST = new TreeSet<>();
 
     private LinkMatcher()
     {
@@ -72,16 +71,10 @@ class LinkMatcher
         throws IOException
     {
         String content;
-        Reader reader = null;
-        try
+        
+        try ( Reader reader = ReaderFactory.newReader( file, encoding ) )
         {
-            reader = ReaderFactory.newReader( file, encoding );
-
             content = IOUtil.toString( reader );
-        }
-        finally
-        {
-            IOUtil.close( reader );
         }
 
         // some link could be in comments, remove them

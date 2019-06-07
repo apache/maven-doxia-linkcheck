@@ -27,7 +27,6 @@ import java.io.Serializable;
  *
  * @author <a href="mailto:bwalding@apache.org">Ben Walding</a>
  * @author <a href="mailto:aheritier@apache.org">Arnaud Heritier</a>
- * @version $Id$
  */
 public class LinkValidationResult
     implements Serializable
@@ -94,6 +93,7 @@ public class LinkValidationResult
     }
 
     /** {@inheritDoc} */
+    @Override
     public String toString()
     {
         StringBuilder sb = new StringBuilder();

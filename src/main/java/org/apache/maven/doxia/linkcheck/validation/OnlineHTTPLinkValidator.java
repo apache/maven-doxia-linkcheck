@@ -54,7 +54,6 @@ import org.codehaus.plexus.util.StringUtils;
  * @author <a href="mailto:bwalding@apache.org">Ben Walding</a>
  * @author <a href="mailto:aheritier@apache.org">Arnaud Heritier</a>
  * @author <a href="mailto:vincent.siveton@gmail.com">Vincent Siveton</a>
- * @version $Id$
  */
 public final class OnlineHTTPLinkValidator
     extends HTTPLinkValidator
@@ -131,6 +130,7 @@ public final class OnlineHTTPLinkValidator
     }
 
     /** {@inheritDoc} */
+    @Override
     public LinkValidationResult validateLink( LinkValidationItem lvi )
     {
         if ( this.cl == null )

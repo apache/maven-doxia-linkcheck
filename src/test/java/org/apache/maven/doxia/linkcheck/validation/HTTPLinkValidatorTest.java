@@ -28,7 +28,6 @@ import junit.framework.TestCase;
 /**
  * @author <a href="bwalding@apache.org">Ben Walding</a>
  * @author <a href="aheritier@apache.org">Arnaud Heritier</a>
- * @version $Id$
  */
 public class HTTPLinkValidatorTest extends TestCase
 {

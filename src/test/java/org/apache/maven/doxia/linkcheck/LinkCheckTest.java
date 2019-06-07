@@ -30,7 +30,6 @@ import org.codehaus.plexus.PlexusTestCase;
 /**
  * @author Ben Walding
  * @author <a href="mailto:carlos@apache.org">Carlos Sanchez</a>
- * @version $Id$
  */
 public class LinkCheckTest
     extends PlexusTestCase
@@ -84,7 +83,7 @@ public class LinkCheckTest
         String fileName = "testExcludes.html";
         check( map, fileName, 2 );
 
-        LinkcheckFile ftc = (LinkcheckFile) map.get( fileName );
+        LinkcheckFile ftc = map.get( fileName );
         assertEquals( "Excluded links", 2, ftc.getSuccessful() );
 
         // index-all.html should get parsed, but is currently having problems.

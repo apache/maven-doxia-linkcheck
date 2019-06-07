@@ -23,7 +23,6 @@ package org.apache.maven.doxia.linkcheck.validation;
  * This class is used to return HTTP status responses from the validation handlers.
  *
  * @author <a href="mailto:vincent.siveton@gmail.com">Vincent Siveton</a>
- * @version $Id$
  */
 public class HTTPLinkValidationResult
     extends LinkValidationResult
@@ -65,6 +64,7 @@ public class HTTPLinkValidationResult
     }
 
     /** {@inheritDoc} */
+    @Override
     public String getErrorMessage()
     {
         return this.httpStatusCode + " " + super.getErrorMessage();
@@ -81,6 +81,7 @@ public class HTTPLinkValidationResult
     }
 
     /** {@inheritDoc} */
+    @Override
     public String toString()
     {
         StringBuilder sb = new StringBuilder( super.toString() );

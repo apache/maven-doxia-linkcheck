@@ -25,12 +25,12 @@ import org.apache.maven.doxia.linkcheck.model.LinkcheckFileResult;
  * Fake links check when maven is offline
  *
  * @author <a href="mailto:aheritier@apache.org">Arnaud Heritier</a>
- * @version $Id$
  */
 public final class OfflineHTTPLinkValidator
     extends HTTPLinkValidator
 {
     /** {@inheritDoc} */
+    @Override
     public LinkValidationResult validateLink( LinkValidationItem lvi )
     {
         return new LinkValidationResult( LinkcheckFileResult.WARNING_LEVEL, false,

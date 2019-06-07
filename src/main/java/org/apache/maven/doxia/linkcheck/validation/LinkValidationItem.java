@@ -24,7 +24,6 @@ import java.io.File;
 /**
  * @author <a href="mailto:bwalding@apache.org">Ben Walding</a>
  * @author <a href="mailto:aheritier@apache.org">Arnaud Heritier</a>
- * @version $Id$
  */
 public class LinkValidationItem
 {
@@ -77,6 +76,7 @@ public class LinkValidationItem
     }
 
     /** {@inheritDoc} */
+    @Override
     public boolean equals( Object obj )
     {
         if ( !( obj instanceof LinkValidationItem ) )
@@ -100,6 +100,7 @@ public class LinkValidationItem
     }
 
     /** {@inheritDoc} */
+    @Override
     public int hashCode()
     {
         return this.source.hashCode() ^ this.link.hashCode();

@@ -27,7 +27,6 @@ import org.apache.maven.doxia.linkcheck.model.LinkcheckModel;
  * Tool to check links from html files in a given directory.
  *
  * @author <a href="mailto:vincent.siveton@gmail.com">Vincent Siveton</a>
- * @version $Id$
  */
 public interface LinkCheck
 {

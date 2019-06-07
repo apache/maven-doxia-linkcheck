@@ -26,12 +26,12 @@ import java.util.Locale;
  *
  * @author <a href="mailto:bwalding@apache.org">Ben Walding</a>
  * @author <a href="mailto:aheritier@apache.org">Arnaud Heritier</a>
- * @version $Id$
  */
 public abstract class HTTPLinkValidator
     implements LinkValidator
 {
     /** {@inheritDoc} */
+    @Override
     public Object getResourceKey( LinkValidationItem lvi )
     {
         String link = lvi.getLink();

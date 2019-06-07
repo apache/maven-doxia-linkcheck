@@ -22,7 +22,6 @@ package org.apache.maven.doxia.linkcheck.validation;
 /**
  * @author <a href="mailto:bwalding@apache.org">Ben Walding</a>
  * @author <a href="mailto:aheritier@apache.org">Arnaud Heritier</a>
- * @version $Id$
  */
 public interface LinkValidator
 {
