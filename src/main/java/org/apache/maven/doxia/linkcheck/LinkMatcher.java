@@ -49,9 +49,6 @@ class LinkMatcher
         Pattern.compile( "<(?>link|a|img|script)[^>]*?(?>href|src)\\s*?=\\s*?[\\\"'](.*?)[\\\"'][^>]*?",
                          Pattern.CASE_INSENSITIVE );
 
-    /** No need to create a new object each time a file is processed. Just clear it. */
-    private static final Set<String> LINK_LIST = new TreeSet<>();
-
     private LinkMatcher()
     {
         // nop
@@ -92,7 +89,8 @@ class LinkMatcher
     static Set<String> match( File file, String encoding )
         throws IOException
     {
-        LINK_LIST.clear();
+      
+        Set<String> linkSet = new TreeSet<>();
 
         final Matcher m = MATCH_PATTERN.matcher( toString( file, encoding ) );
 
@@ -117,9 +115,9 @@ class LinkMatcher
             // continue;
             // }
 
-            LINK_LIST.add( link );
+            linkSet.add( link );
         }
 
-        return LINK_LIST;
+        return linkSet;
     }
 }
