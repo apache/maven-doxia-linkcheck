@@ -46,7 +46,6 @@ import org.apache.maven.doxia.linkcheck.validation.OnlineHTTPLinkValidator;
 
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.util.FileUtils;
-import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.ReaderFactory;
 import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.WriterFactory;
@@ -339,7 +338,7 @@ public final class DefaultLinkCheck
     /**
      * Gets the comma separated list of effective include patterns.
      *
-     * @return The comma separated list of effective include patterns, never <code>null</code>.
+     * @return the comma separated list of effective include patterns, never <code>null</code>
      */
     private String getIncludedPages()
     {
@@ -485,9 +484,9 @@ public final class DefaultLinkCheck
         {
             hrefs = LinkMatcher.match( new File( linkcheckFile.getAbsolutePath() ), encoding );
         }
-        catch ( Throwable t )
+        catch ( StackOverflowError | IOException t )
         {
-            // We catch Throwable, because there is a chance that the domReader will throw
+            // There is a chance that the domReader will throw
             // a stack overflow exception for some files
 
             LOG.error( "Received: [" + t + "] in page [" + linkcheckFile.getRelativePath() + "]" );
@@ -504,15 +503,11 @@ public final class DefaultLinkCheck
             return;
         }
 
-        LinkcheckFileResult lcr;
-        LinkValidationItem lvi;
-        LinkValidationResult result;
-
         for ( String href : hrefs )
         {
-            lcr = new LinkcheckFileResult();
-            lvi = new LinkValidationItem( new File( linkcheckFile.getAbsolutePath() ), href );
-            result = lvm.validateLink( lvi );
+            LinkcheckFileResult lcr = new LinkcheckFileResult();
+            LinkValidationItem lvi = new LinkValidationItem( new File( linkcheckFile.getAbsolutePath() ), href );
+            LinkValidationResult result = lvm.validateLink( lvi );
             lcr.setTarget( href );
             lcr.setErrorMessage( result.getErrorMessage() );
 
@@ -625,39 +620,33 @@ public final class DefaultLinkCheck
         }
 
         File dir = this.reportOutput.getParentFile();
-        if ( dir != null )
+        if ( dir != null && !dir.exists() )
         {
-            dir.mkdirs();
+            if ( !dir.mkdirs() )
+            {
+                throw new IOException( "Could not create " + dir );
+            }
         }
 
-        Writer writer = null;
         LinkcheckModelXpp3Writer xpp3Writer = new LinkcheckModelXpp3Writer();
-        try
+        try ( Writer writer = WriterFactory.newXmlWriter( this.reportOutput ) ) 
         {
-            writer = WriterFactory.newXmlWriter( this.reportOutput );
             xpp3Writer.write( writer, model );
         }
         catch ( IllegalStateException e )
         {
             IOException ioe =
-                new IOException( e.getMessage() + " Maybe try to specify an other encoding instead of '"
-                    + encoding + "'." );
-            ioe.initCause( e );
+                new IOException( e.getMessage() + " Maybe try to specify another encoding instead of '"
+                    + encoding + "'.", e );
             throw ioe;
         }
-        finally
-        {
-            IOUtil.close( writer );
-        }
-
-        dir = null;
     }
 
     private static String[] toStringArray( int[] array )
     {
         if ( array == null )
         {
-            throw new IllegalArgumentException( "array could not be null" );
+            throw new NullPointerException( "array could not be null" );
         }
 
         String[] result = new String[array.length];
