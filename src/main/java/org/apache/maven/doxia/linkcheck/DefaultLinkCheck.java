@@ -646,7 +646,7 @@ public final class DefaultLinkCheck
     {
         if ( array == null )
         {
-            throw new NullPointerException( "array could not be null" );
+            throw new NullPointerException( "array must not be null" );
         }
 
         String[] result = new String[array.length];
