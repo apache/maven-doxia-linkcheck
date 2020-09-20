@@ -74,8 +74,6 @@ public class AnchorLinkTest
 
         LinkcheckFile ftc = check( map, "testAnchor.html", 1 );
 
-        //System.out.println("anchor test " + ftc.getResults());
-
         assertEquals( "Should have matched!", 1, ftc.getSuccessful() );
         assertEquals( "Should have no failures!", 0, ftc.getUnsuccessful() );
     }
