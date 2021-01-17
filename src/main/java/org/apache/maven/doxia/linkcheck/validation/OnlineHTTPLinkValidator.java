@@ -89,7 +89,7 @@ public final class OnlineHTTPLinkValidator
     /**
      * Constructor: initialize settings.
      *
-     * @param bean the http bean encapsuling all HTTP parameters supported
+     * @param bean the http bean encapsulating all HTTP parameters supported
      */
     public OnlineHTTPLinkValidator( HttpBean bean )
     {
@@ -108,7 +108,7 @@ public final class OnlineHTTPLinkValidator
     /**
      * The base URL.
      *
-     * @return the base URL.
+     * @return the base URL
      */
     public String getBaseURL()
     {
@@ -118,7 +118,7 @@ public final class OnlineHTTPLinkValidator
     /**
      * Sets the base URL. This is pre-pended to links that start with '/'.
      *
-     * @param url the base URL.
+     * @param url the base URL
      */
     public void setBaseURL( String url )
     {
