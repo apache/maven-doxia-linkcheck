@@ -54,7 +54,7 @@ import org.apache.maven.doxia.linkcheck.model.LinkcheckFileResult;
 import org.codehaus.plexus.util.StringUtils;
 
 /**
- * Checks links which are normal URLs
+ * Checks links which are normal URLs.
  *
  * @author <a href="mailto:bwalding@apache.org">Ben Walding</a>
  * @author <a href="mailto:aheritier@apache.org">Arnaud Heritier</a>
@@ -79,7 +79,7 @@ public final class OnlineHTTPLinkValidator
     private transient HttpClient cl;
 
     /**
-     * Constructor: initialize settings, use "head" method.
+     * Constructor: initialize settings, use HEAD method.
      */
     public OnlineHTTPLinkValidator()
     {
@@ -173,35 +173,35 @@ public final class OnlineHTTPLinkValidator
                 link = getBaseURL() + link;
             }
 
-            HttpResponse hm = null;
+            HttpResponse response = null;
             try
             {
-                hm = checkLink( link, 0 );
+                response = checkLink( link, 0 );
             }
-            catch ( IOException t )
+            catch ( IOException ex )
             {
                 if ( LOG.isDebugEnabled() )
                 {
-                    LOG.debug( "Received: [" + t + "] for [" + link + "] in page [" + lvi.getSource() + "]", t );
+                    LOG.debug( "Received: [" + ex + "] for [" + link + "] in page [" + lvi.getSource() + "]", ex );
                 }
 
-                return new LinkValidationResult( LinkcheckFileResult.ERROR_LEVEL, false, t.getClass().getName()
-                    + " : " + t.getMessage() );
+                return new LinkValidationResult( LinkcheckFileResult.ERROR_LEVEL, false, ex.getClass().getName()
+                    + " : " + ex.getMessage() );
             }
 
-            if ( hm == null )
+            if ( response == null )
             {
                 return new LinkValidationResult( LinkcheckFileResult.ERROR_LEVEL, false,
                                                  "Cannot retrieve HTTP Status" );
             }
 
-            int statusCode = hm.getStatusLine().getStatusCode();
+            int statusCode = response.getStatusLine().getStatusCode();
             if ( statusCode == HttpStatus.SC_OK )
             {
                 // check if the anchor is present
                 if ( anchor.length() > 0 )
                 {
-                    String content = EntityUtils.toString( hm.getEntity() );
+                    String content = EntityUtils.toString( response.getEntity() );
 
                     if ( !Anchors.matchesAnchor( content, anchor ) )
                     {
@@ -210,7 +210,7 @@ public final class OnlineHTTPLinkValidator
                     }
                 }
                 return new HTTPLinkValidationResult( LinkcheckFileResult.VALID_LEVEL, true,
-                        statusCode, hm.getStatusLine().getReasonPhrase() );
+                        statusCode, response.getStatusLine().getReasonPhrase() );
             }
 
             String msg = "Received: [" + statusCode + "] for [" + link + "] in page ["
@@ -223,13 +223,13 @@ public final class OnlineHTTPLinkValidator
                 LOG.warn( msg );
 
                 return new HTTPLinkValidationResult( LinkcheckFileResult.WARNING_LEVEL, true, statusCode,
-                        hm.getStatusLine().getReasonPhrase() );
+                        response.getStatusLine().getReasonPhrase() );
             }
 
             LOG.debug( msg );
 
             return new HTTPLinkValidationResult( LinkcheckFileResult.ERROR_LEVEL, false, statusCode,
-                    hm.getStatusLine().getReasonPhrase() );
+                    response.getStatusLine().getReasonPhrase() );
         }
         catch ( Exception t )
         {
