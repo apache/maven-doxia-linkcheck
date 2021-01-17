@@ -32,8 +32,7 @@ under the License.
   <classes>
     <class>
       <name>HttpBean</name>
-      <description>Http bean to encapsulate the supported HTTP parameters.
-         @see org.apache.commons.httpclient.HttpMethod</description>
+      <description>Http bean to encapsulate the supported HTTP parameters.</description>
       <version>1.0.0</version>
       <fields>
         <field>

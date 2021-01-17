@@ -84,23 +84,19 @@ public final class DefaultLinkCheck
     private String[] excludedPages = null;
 
     /**
-     * Excluded http errors only in on line mode.
-     *
-     * @see {@link HttpStatus} for all defined values.
+     * Excluded http errors only in online mode.
      */
     private int[] excludedHttpStatusErrors = null;
 
     /**
-     * Excluded http warnings only in on line mode.
-     *
-     * @see {@link HttpStatus} for all defined values.
+     * Excluded http warnings only in online mode.
      */
     private int[] excludedHttpStatusWarnings = null;
 
     /** Online mode. */
     private boolean online;
 
-    /** Bean enncapsuling some https parameters */
+    /** Bean enncapsulating some https parameters */
     private HttpBean http;
 
     /** Internal LinkValidatorManager. */
