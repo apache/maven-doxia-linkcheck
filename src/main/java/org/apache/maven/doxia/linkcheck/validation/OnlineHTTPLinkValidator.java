@@ -24,32 +24,37 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Map;
 
-import org.apache.commons.httpclient.Credentials;
-import org.apache.commons.httpclient.Header;
-import org.apache.commons.httpclient.HostConfiguration;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpException;
-import org.apache.commons.httpclient.HttpMethod;
-import org.apache.commons.httpclient.HttpState;
-import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
-import org.apache.commons.httpclient.NTCredentials;
-import org.apache.commons.httpclient.StatusLine;
-import org.apache.commons.httpclient.UsernamePasswordCredentials;
-import org.apache.commons.httpclient.auth.AuthScope;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.methods.HeadMethod;
-import org.apache.commons.httpclient.params.HttpClientParams;
-import org.apache.commons.httpclient.params.HttpMethodParams;
+import org.apache.http.Header;
+import org.apache.http.HttpException;
+import org.apache.http.HttpHost;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.StatusLine;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.Credentials;
+import org.apache.http.auth.NTCredentials;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpHead;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.config.SocketConfig;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.http.util.EntityUtils;
 import org.apache.maven.doxia.linkcheck.HttpBean;
 import org.apache.maven.doxia.linkcheck.model.LinkcheckFileResult;
 import org.codehaus.plexus.util.StringUtils;
 
 /**
- * Checks links which are normal URLs
+ * Checks links which are normal URLs.
  *
  * @author <a href="mailto:bwalding@apache.org">Ben Walding</a>
  * @author <a href="mailto:aheritier@apache.org">Arnaud Heritier</a>
@@ -64,13 +69,7 @@ public final class OnlineHTTPLinkValidator
     /** The maximum number of redirections for a link. */
     private static final int MAX_NB_REDIRECT = 10;
 
-    /** Use the get method to test pages. */
-    private static final String GET_METHOD = "get";
-
-    /** Use the head method to test pages. */
-    private static final String HEAD_METHOD = "head";
-
-    /** The http bean encapsuling all http parameters supported. */
+    /** The http bean encapsulating all http parameters supported. */
     private HttpBean http;
 
     /** The base URL for links that start with '/'. */
@@ -80,7 +79,7 @@ public final class OnlineHTTPLinkValidator
     private transient HttpClient cl;
 
     /**
-     * Constructor: initialize settings, use "head" method.
+     * Constructor: initialize settings, use HEAD method.
      */
     public OnlineHTTPLinkValidator()
     {
@@ -90,7 +89,7 @@ public final class OnlineHTTPLinkValidator
     /**
      * Constructor: initialize settings.
      *
-     * @param bean The http bean encapsuling all HTTP parameters supported.
+     * @param bean the http bean encapsulating all HTTP parameters supported
      */
     public OnlineHTTPLinkValidator( HttpBean bean )
     {
@@ -99,10 +98,7 @@ public final class OnlineHTTPLinkValidator
             bean = new HttpBean();
         }
 
-        if ( LOG.isDebugEnabled() )
-        {
-            LOG.debug( "Will use method : [" + bean.getMethod() + "]" );
-        }
+        LOG.debug( "Using method : [" + bean.getMethod() + "]" );
 
         this.http = bean;
 
@@ -112,7 +108,7 @@ public final class OnlineHTTPLinkValidator
     /**
      * The base URL.
      *
-     * @return the base URL.
+     * @return the base URL
      */
     public String getBaseURL()
     {
@@ -122,7 +118,7 @@ public final class OnlineHTTPLinkValidator
     /**
      * Sets the base URL. This is pre-pended to links that start with '/'.
      *
-     * @param url the base URL.
+     * @param url the base URL
      */
     public void setBaseURL( String url )
     {
@@ -149,11 +145,6 @@ public final class OnlineHTTPLinkValidator
             }
         }
 
-        // Some web servers don't allow the default user-agent sent by httpClient
-        System.setProperty( HttpMethodParams.USER_AGENT, "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.0)" );
-        this.cl.getParams().setParameter( HttpMethodParams.USER_AGENT,
-                                          "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.0)" );
-
         String link = lvi.getLink();
         String anchor = "";
         int idx = link.indexOf( '#' );
@@ -169,11 +160,8 @@ public final class OnlineHTTPLinkValidator
             {
                 if ( getBaseURL() == null )
                 {
-                    if ( LOG.isWarnEnabled() )
-                    {
-                        LOG.warn( "Cannot check link [" + link + "] in page [" + lvi.getSource()
+                    LOG.warn( "Cannot check link [" + link + "] in page [" + lvi.getSource()
                             + "], as no base URL has been set!" );
-                    }
 
                     return new LinkValidationResult( LinkcheckFileResult.WARNING_LEVEL, false,
                                                      "No base URL specified" );
@@ -182,34 +170,32 @@ public final class OnlineHTTPLinkValidator
                 link = getBaseURL() + link;
             }
 
-            HttpMethod hm = null;
+            HttpResponse response = null;
             try
             {
-                hm = checkLink( link, 0 );
+                response = checkLink( link, 0 );
             }
-            catch ( Throwable t )
+            catch ( IOException | HttpException ex )
             {
-                if ( LOG.isDebugEnabled() )
-                {
-                    LOG.debug( "Received: [" + t + "] for [" + link + "] in page [" + lvi.getSource() + "]", t );
-                }
+                LOG.debug( "Received: [" + ex + "] for [" + link + "] in page [" + lvi.getSource() + "]", ex );
 
-                return new LinkValidationResult( LinkcheckFileResult.ERROR_LEVEL, false, t.getClass().getName()
-                    + " : " + t.getMessage() );
+                return new LinkValidationResult( LinkcheckFileResult.ERROR_LEVEL, false, ex.getClass().getName()
+                    + " : " + ex.getMessage() );
             }
 
-            if ( hm == null )
+            if ( response == null )
             {
                 return new LinkValidationResult( LinkcheckFileResult.ERROR_LEVEL, false,
-                                                 "Cannot retreive HTTP Status" );
+                                                 "Cannot retrieve HTTP Status" );
             }
 
-            if ( hm.getStatusCode() == HttpStatus.SC_OK )
+            int statusCode = response.getStatusLine().getStatusCode();
+            if ( statusCode == HttpStatus.SC_OK )
             {
-                // lets check if the anchor is present
+                // check if the anchor is present
                 if ( anchor.length() > 0 )
                 {
-                    String content = hm.getResponseBodyAsString();
+                    String content = EntityUtils.toString( response.getEntity() );
 
                     if ( !Anchors.matchesAnchor( content, anchor ) )
                     {
@@ -217,46 +203,37 @@ public final class OnlineHTTPLinkValidator
                             "Missing anchor '" + anchor + "'" );
                     }
                 }
-                return new HTTPLinkValidationResult( LinkcheckFileResult.VALID_LEVEL, true, hm.getStatusCode(),
-                                                     hm.getStatusText() );
+                return new HTTPLinkValidationResult( LinkcheckFileResult.VALID_LEVEL, true,
+                        statusCode, response.getStatusLine().getReasonPhrase() );
             }
 
-            String msg =
-                "Received: [" + hm.getStatusCode() + "] for [" + link + "] in page [" + lvi.getSource() + "]";
-            // If there's a redirection ... add a warning
-            if ( hm.getStatusCode() == HttpStatus.SC_MOVED_PERMANENTLY
-                || hm.getStatusCode() == HttpStatus.SC_MOVED_TEMPORARILY
-                || hm.getStatusCode() == HttpStatus.SC_TEMPORARY_REDIRECT )
+            String msg = "Received: [" + statusCode + "] for [" + link + "] in page ["
+                    + lvi.getSource() + "]";
+            // If there's a redirection, add a warning
+            if ( statusCode == HttpStatus.SC_MOVED_PERMANENTLY
+                || statusCode == HttpStatus.SC_MOVED_TEMPORARILY
+                || statusCode == HttpStatus.SC_TEMPORARY_REDIRECT )
             {
                 LOG.warn( msg );
 
-                return new HTTPLinkValidationResult( LinkcheckFileResult.WARNING_LEVEL, true, hm.getStatusCode(),
-                                                     hm.getStatusText() );
+                return new HTTPLinkValidationResult( LinkcheckFileResult.WARNING_LEVEL, true, statusCode,
+                        response.getStatusLine().getReasonPhrase() );
             }
 
             LOG.debug( msg );
 
-            return new HTTPLinkValidationResult( LinkcheckFileResult.ERROR_LEVEL, false, hm.getStatusCode(),
-                                                 hm.getStatusText() );
+            return new HTTPLinkValidationResult( LinkcheckFileResult.ERROR_LEVEL, false, statusCode,
+                    response.getStatusLine().getReasonPhrase() );
         }
-        catch ( Throwable t )
+        catch ( IOException ex )
         {
-            String msg = "Received: [" + t + "] for [" + link + "] in page [" + lvi.getSource() + "]";
-            if ( LOG.isDebugEnabled() )
-            {
-                LOG.debug( msg, t );
-            }
-            else
-            {
-                LOG.error( msg );
-            }
+            String msg = "Received: [" + ex + "] for [" + link + "] in page [" + lvi.getSource() + "]";
+            LOG.error( msg, ex );
 
-            return new LinkValidationResult( LinkcheckFileResult.ERROR_LEVEL, false, t.getMessage() );
+            return new LinkValidationResult( LinkcheckFileResult.ERROR_LEVEL, false, ex.getMessage() );
         }
         finally
         {
-            System.getProperties().remove( HttpMethodParams.USER_AGENT );
-
             if ( this.http.getHttpClientParameters() != null )
             {
                 for ( Map.Entry<Object, Object> entry : this.http.getHttpClientParameters().entrySet() )
@@ -273,61 +250,62 @@ public final class OnlineHTTPLinkValidator
     /** Initialize the HttpClient. */
     private void initHttpClient()
     {
-        LOG.debug( "A new HttpClient instance is needed ..." );
+        LOG.debug( "Creating a new HttpClient instance." );
 
-        this.cl = new HttpClient( new MultiThreadedHttpConnectionManager() );
+        HttpClientBuilder builder = HttpClients.custom();
 
-        // Default params
+        // connection manager
+        PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
+        connectionManager.setMaxTotal( 100 );
+        connectionManager.setDefaultMaxPerRoute( 10 );
+        builder.setConnectionManager( connectionManager );
+
+        RequestConfig.Builder requestConfigBuilder = RequestConfig.custom();
+        // redirects
+        requestConfigBuilder.setRedirectsEnabled( this.http.isFollowRedirects() );
+
+        // timeouts
+        SocketConfig.Builder socketConfigBuilder = SocketConfig.custom();
         if ( this.http.getTimeout() != 0 )
         {
-            this.cl.getHttpConnectionManager().getParams().setConnectionTimeout( this.http.getTimeout() );
-            this.cl.getHttpConnectionManager().getParams().setSoTimeout( this.http.getTimeout() );
+            requestConfigBuilder.setConnectTimeout( this.http.getTimeout() );
+            requestConfigBuilder.setSocketTimeout( this.http.getTimeout() );
+            socketConfigBuilder.setSoTimeout( this.http.getTimeout() );
         }
-        this.cl.getParams().setBooleanParameter( HttpClientParams.ALLOW_CIRCULAR_REDIRECTS, true );
 
-        HostConfiguration hc = new HostConfiguration();
+        builder.setDefaultRequestConfig( requestConfigBuilder.build() );
+        builder.setDefaultSocketConfig( socketConfigBuilder.build() );
 
-        HttpState state = new HttpState();
-        if ( StringUtils.isNotEmpty( this.http.getProxyHost() ) )
+        // proxy
+        if ( StringUtils.isNotBlank( this.http.getProxyHost() ) )
         {
-            hc.setProxy( this.http.getProxyHost(), this.http.getProxyPort() );
-
-            if ( LOG.isDebugEnabled() )
-            {
-                LOG.debug( "Proxy Host:" + this.http.getProxyHost() );
-                LOG.debug( "Proxy Port:" + this.http.getProxyPort() );
-            }
+            HttpHost proxy = new HttpHost( this.http.getProxyHost(), this.http.getProxyPort() );
+            requestConfigBuilder.setProxy( proxy );
+            LOG.debug( "Proxy Host:" + this.http.getProxyHost() );
+            LOG.debug( "Proxy Port:" + this.http.getProxyPort() );
 
             if ( StringUtils.isNotEmpty( this.http.getProxyUser() ) && this.http.getProxyPassword() != null )
             {
-                if ( LOG.isDebugEnabled() )
-                {
-                    LOG.debug( "Proxy User:" + this.http.getProxyUser() );
-                }
+                LOG.debug( "Proxy User:" + this.http.getProxyUser() );
 
                 Credentials credentials;
                 if ( StringUtils.isNotEmpty( this.http.getProxyNtlmHost() ) )
                 {
-                    credentials =
-                        new NTCredentials( this.http.getProxyUser(), this.http.getProxyPassword(),
-                                           this.http.getProxyNtlmHost(), this.http.getProxyNtlmDomain() );
+                    credentials = new NTCredentials( this.http.getProxyUser(), this.http.getProxyPassword(),
+                            this.http.getProxyNtlmHost(), this.http.getProxyNtlmDomain() );
                 }
                 else
                 {
                     credentials =
                         new UsernamePasswordCredentials( this.http.getProxyUser(), this.http.getProxyPassword() );
                 }
-
-                state.setProxyCredentials( AuthScope.ANY, credentials );
+                CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+                credentialsProvider.setCredentials( AuthScope.ANY, credentials );
+                builder.setDefaultCredentialsProvider( credentialsProvider );
             }
         }
-        else
-        {
-            LOG.debug( "Not using a proxy" );
-        }
 
-        this.cl.setHostConfiguration( hc );
-        this.cl.setState( state );
+        this.cl = builder.build();
 
         LOG.debug( "New HttpClient instance created." );
     }
@@ -335,32 +313,28 @@ public final class OnlineHTTPLinkValidator
     /**
      * Checks the given link.
      *
-     * @param link the link to check.
-     * @param nbRedirect the number of current redirects.
-     * @return HttpMethod
-     * @throws IOException if something goes wrong.
+     * @param url the link to check
+     * @param nbRedirect the number of current redirects
+     * @throws IOException if something goes wrong
      */
-    private HttpMethod checkLink( String link, int nbRedirect )
-        throws IOException
+    private HttpResponse checkLink( String url, int nbRedirect )
+            throws IOException, HttpException
     {
+
+        // check if we've redirected too many times
         int max = MAX_NB_REDIRECT;
         if ( this.http.getHttpClientParameters() != null
-            && this.http.getHttpClientParameters().get( HttpClientParams.MAX_REDIRECTS ) != null )
+            && this.http.getHttpClientParameters().get( "http.protocol.max-redirects" ) != null )
         {
             try
             {
-                max =
-                    Integer.valueOf(
-                                     this.http.getHttpClientParameters().get( HttpClientParams.MAX_REDIRECTS )
-                                              .toString() ).intValue();
+                max = Integer.parseInt(
+                        this.http.getHttpClientParameters().get( "http.protocol.max-redirects" ).toString() );
             }
             catch ( NumberFormatException e )
             {
-                if ( LOG.isWarnEnabled() )
-                {
-                    LOG.warn( "HttpClient parameter '" + HttpClientParams.MAX_REDIRECTS
+                LOG.warn( "HttpClient parameter '" + "http.protocol.max-redirects"
                         + "' is not a number. Ignoring!" );
-                }
             }
         }
         if ( nbRedirect > max )
@@ -368,103 +342,79 @@ public final class OnlineHTTPLinkValidator
             throw new HttpException( "Maximum number of redirections (" + max + ") exceeded" );
         }
 
-        HttpMethod hm;
-        if ( HEAD_METHOD.equalsIgnoreCase( this.http.getMethod() ) )
-        {
-            hm = new HeadMethod( link );
-        }
-        else if ( GET_METHOD.equalsIgnoreCase( this.http.getMethod() ) )
-        {
-            hm = new GetMethod( link );
-        }
-        else
-        {
-            if ( LOG.isErrorEnabled() )
-            {
-                LOG.error( "Unsupported method: " + this.http.getMethod() + ", using 'get'." );
-            }
-            hm = new GetMethod( link );
-        }
-
-        // Default
-        hm.setFollowRedirects( this.http.isFollowRedirects() );
-
+        HttpUriRequest request;
         try
         {
-            URL url = new URL( link );
-
-            cl.getHostConfiguration().setHost( url.getHost(), url.getPort(), url.getProtocol() );
-
-            cl.executeMethod( hm );
-
-            StatusLine sl = hm.getStatusLine();
-            if ( sl == null )
+            if ( "HEAD".equalsIgnoreCase( this.http.getMethod() ) )
             {
-                if ( LOG.isErrorEnabled() )
-                {
-                    LOG.error( "Unknown error validating link : " + link );
-                }
-
-                return null;
+                request = new HttpHead( url );
             }
-
-            if ( hm.getStatusCode() == HttpStatus.SC_MOVED_PERMANENTLY
-                || hm.getStatusCode() == HttpStatus.SC_MOVED_TEMPORARILY
-                || hm.getStatusCode() == HttpStatus.SC_TEMPORARY_REDIRECT )
+            else if ( "GET".equalsIgnoreCase( this.http.getMethod() ) )
             {
-                Header locationHeader = hm.getResponseHeader( "location" );
-
-                if ( locationHeader == null )
-                {
-                    LOG.error( "Site sent redirect, but did not set Location header" );
-
-                    return hm;
-                }
-
-                String newLink = locationHeader.getValue();
-
-                // Be careful to absolute/relative links
-                if ( !newLink.startsWith( "http://" ) && !newLink.startsWith( "https://" ) )
-                {
-                    if ( newLink.startsWith( "/" ) )
-                    {
-                        URL oldUrl = new URL( link );
-
-                        newLink =
-                            oldUrl.getProtocol() + "://" + oldUrl.getHost()
-                                + ( oldUrl.getPort() > 0 ? ":" + oldUrl.getPort() : "" ) + newLink;
-                    }
-                    else
-                    {
-                        newLink = link + newLink;
-                    }
-                }
-
-                HttpMethod oldHm = hm;
-
-                if ( LOG.isDebugEnabled() )
-                {
-                    LOG.debug( "[" + link + "] is redirected to [" + newLink + "]" );
-                }
-
-                oldHm.releaseConnection();
-
-                hm = checkLink( newLink, nbRedirect + 1 );
-
-                // Restore the hm to "Moved permanently" | "Moved temporarily" | "Temporary redirect"
-                // if the new location is found to allow us to report it
-                if ( hm.getStatusCode() == HttpStatus.SC_OK && nbRedirect == 0 )
-                {
-                    return oldHm;
-                }
+                request = new HttpGet( url );
             }
-
+            else
+            {
+                LOG.error( "Unsupported method: " + this.http.getMethod() + ", using 'get'." );
+                request = new HttpGet( url );
+            }
         }
-        finally
+        catch ( IllegalArgumentException ex )
         {
-            hm.releaseConnection();
+            throw new HttpException( "Invalid URL " + url, ex );
         }
 
-        return hm;
+        HttpResponse response = cl.execute( request );
+
+        StatusLine statusLine = response.getStatusLine();
+        if ( statusLine == null )
+        {
+            LOG.error( "Unknown error validating link : " + url );
+            return null;
+        }
+
+        int statusCode = response.getStatusLine().getStatusCode();
+        if ( statusCode == HttpStatus.SC_MOVED_PERMANENTLY
+                || statusCode == HttpStatus.SC_MOVED_TEMPORARILY
+                || statusCode == HttpStatus.SC_TEMPORARY_REDIRECT )
+        {
+            Header[] locationHeader = response.getHeaders( "location" );
+
+            if ( locationHeader.length == 0 )
+            {
+                LOG.error( "Site sent redirect, but did not set Location header" );
+                return response;
+            }
+
+            String newLink = locationHeader[0].getValue();
+
+            // Be careful to absolute/relative links
+            if ( !newLink.startsWith( "http://" ) && !newLink.startsWith( "https://" ) )
+            {
+                if ( newLink.startsWith( "/" ) )
+                {
+                    URL oldUrl = new URL( url );
+                    newLink = oldUrl.getProtocol() + "://" + oldUrl.getHost()
+                            + ( oldUrl.getPort() > 0 ? ":" + oldUrl.getPort() : "" ) + newLink;
+                }
+                else
+                {
+                    newLink = url + newLink;
+                }
+            }
+
+            LOG.debug( "[" + url + "] is redirected to [" + newLink + "]" );
+
+            HttpResponse oldResponse = response;
+            response = checkLink( newLink, nbRedirect + 1 );
+
+            // Restore the status to "Moved permanently" | "Moved temporarily" | "Temporary redirect"
+            // if the new location is found to allow us to report it
+            if ( statusCode == HttpStatus.SC_OK && nbRedirect == 0 )
+            {
+                return oldResponse;
+            }
+        }
+        return response;
     }
 }

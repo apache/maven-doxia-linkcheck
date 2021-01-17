@@ -48,16 +48,14 @@ public interface LinkCheck
     void setBaseURL( String url );
 
     /**
-     * Sets the excluded HTTP errors, i.e. <code>404</code>, a int[] with excluded errors.
-     * See {@link org.apache.commons.httpclient.HttpStatus} for all possible values.
+     * Sets the excluded HTTP errors; e.g. <code>404</code>, a int[] with excluded errors.
      *
      * @param excl The excludes to set
      */
     void setExcludedHttpStatusErrors( int[] excl );
 
     /**
-     * Sets the excluded HTTP warnings, i.e. <code>301</code>, a int[] with excluded errors.
-     * See {@link org.apache.commons.httpclient.HttpStatus} for all possible values.
+     * Sets the excluded HTTP warnings, e.g. <code>301</code>, a int[] with excluded errors.
      *
      * @param excl The excludes to set
      */
@@ -66,7 +64,7 @@ public interface LinkCheck
     /**
      * Sets the excluded links, a String[] with excluded locations.
      * Could contains a link, i.e. <code>http:&#47;&#47;maven.apache.org/</code>,
-     * or pattern links i.e. <code>http:&#47;&#47;maven.apache.org&#47;**&#47;*.html</code>
+     * or pattern links. E.g. <code>http:&#47;&#47;maven.apache.org&#47;**&#47;*.html</code>
      *
      * @param excl The excludes to set
      */

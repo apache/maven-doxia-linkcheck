@@ -26,7 +26,7 @@ under the License.
     <groupId>org.apache.maven.doxia</groupId>
     <artifactId>doxia-tools</artifactId>
     <version>34</version>
-    <relativePath></relativePath>
+    <relativePath/>
   </parent>
 
   <artifactId>doxia-linkcheck</artifactId>
@@ -64,21 +64,14 @@ under the License.
   <dependencies>
     <!-- compile dependencies -->
     <dependency>
-      <groupId>commons-httpclient</groupId>
-      <artifactId>commons-httpclient</artifactId>
-      <version>3.1</version>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpclient</artifactId>
+      <version>4.5.13</version>
     </dependency>
     <dependency>
       <groupId>commons-logging</groupId>
       <artifactId>commons-logging</artifactId>
       <version>1.2</version>
-    </dependency>
-    <!-- Not included in Httpclient -->
-    <dependency>
-      <groupId>log4j</groupId>
-      <artifactId>log4j</artifactId>
-      <version>1.2.17</version>
-      <scope>runtime</scope>
     </dependency>
 
     <!-- Plexus -->
@@ -98,7 +91,7 @@ under the License.
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>3.8.2</version>
+      <version>4.13.2</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

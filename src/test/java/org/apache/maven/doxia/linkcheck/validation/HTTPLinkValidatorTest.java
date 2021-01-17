@@ -53,9 +53,7 @@ public class HTTPLinkValidatorTest extends TestCase
 
             this.hlv = new OnlineHTTPLinkValidator();
 
-            // http://www.apache.org is being redirected to https://www.apache.org
-            assertEquals( LinkcheckFileResult.WARNING_LEVEL, checkLink( "http://www.apache.org" ).getStatus() );
-            assertEquals( LinkcheckFileResult.VALID_LEVEL, checkLink( "https://www.apache.org" ).getStatus() );
+            assertEquals( LinkcheckFileResult.VALID_LEVEL, checkLink( "http://www.apache.org" ).getStatus() );
             assertEquals( LinkcheckFileResult.ERROR_LEVEL, checkLink( "http://www.example.com>);" ).getStatus() );
         }
         else
