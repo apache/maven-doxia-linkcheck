@@ -160,11 +160,8 @@ public final class OnlineHTTPLinkValidator
             {
                 if ( getBaseURL() == null )
                 {
-                    if ( LOG.isWarnEnabled() )
-                    {
-                        LOG.warn( "Cannot check link [" + link + "] in page [" + lvi.getSource()
+                    LOG.warn( "Cannot check link [" + link + "] in page [" + lvi.getSource()
                             + "], as no base URL has been set!" );
-                    }
 
                     return new LinkValidationResult( LinkcheckFileResult.WARNING_LEVEL, false,
                                                      "No base URL specified" );
@@ -178,12 +175,9 @@ public final class OnlineHTTPLinkValidator
             {
                 response = checkLink( link, 0 );
             }
-            catch ( IOException ex )
+            catch ( IOException | HttpException ex )
             {
-                if ( LOG.isDebugEnabled() )
-                {
-                    LOG.debug( "Received: [" + ex + "] for [" + link + "] in page [" + lvi.getSource() + "]", ex );
-                }
+                LOG.debug( "Received: [" + ex + "] for [" + link + "] in page [" + lvi.getSource() + "]", ex );
 
                 return new LinkValidationResult( LinkcheckFileResult.ERROR_LEVEL, false, ex.getClass().getName()
                     + " : " + ex.getMessage() );
@@ -231,12 +225,12 @@ public final class OnlineHTTPLinkValidator
             return new HTTPLinkValidationResult( LinkcheckFileResult.ERROR_LEVEL, false, statusCode,
                     response.getStatusLine().getReasonPhrase() );
         }
-        catch ( Exception t )
+        catch ( IOException ex )
         {
-            String msg = "Received: [" + t + "] for [" + link + "] in page [" + lvi.getSource() + "]";
-            LOG.error( msg, t );
+            String msg = "Received: [" + ex + "] for [" + link + "] in page [" + lvi.getSource() + "]";
+            LOG.error( msg, ex );
 
-            return new LinkValidationResult( LinkcheckFileResult.ERROR_LEVEL, false, t.getMessage() );
+            return new LinkValidationResult( LinkcheckFileResult.ERROR_LEVEL, false, ex.getMessage() );
         }
         finally
         {
@@ -319,11 +313,11 @@ public final class OnlineHTTPLinkValidator
     /**
      * Checks the given link.
      *
-     * @param link the link to check
+     * @param url the link to check
      * @param nbRedirect the number of current redirects
      * @throws IOException if something goes wrong
      */
-    private HttpResponse checkLink( String link, int nbRedirect )
+    private HttpResponse checkLink( String url, int nbRedirect )
             throws IOException, HttpException
     {
 
@@ -349,18 +343,25 @@ public final class OnlineHTTPLinkValidator
         }
 
         HttpUriRequest request;
-        if ( "HEAD".equalsIgnoreCase( this.http.getMethod() ) )
+        try
         {
-            request = new HttpHead( link );
+            if ( "HEAD".equalsIgnoreCase( this.http.getMethod() ) )
+            {
+                request = new HttpHead( url );
+            }
+            else if ( "GET".equalsIgnoreCase( this.http.getMethod() ) )
+            {
+                request = new HttpGet( url );
+            }
+            else
+            {
+                LOG.error( "Unsupported method: " + this.http.getMethod() + ", using 'get'." );
+                request = new HttpGet( url );
+            }
         }
-        else if ( "GET".equalsIgnoreCase( this.http.getMethod() ) )
+        catch ( IllegalArgumentException ex )
         {
-            request = new HttpGet( link );
-        }
-        else
-        {
-            LOG.error( "Unsupported method: " + this.http.getMethod() + ", using 'get'." );
-            request = new HttpGet( link );
+            throw new HttpException( "Invalid URL " + url, ex );
         }
 
         HttpResponse response = cl.execute( request );
@@ -368,7 +369,7 @@ public final class OnlineHTTPLinkValidator
         StatusLine statusLine = response.getStatusLine();
         if ( statusLine == null )
         {
-            LOG.error( "Unknown error validating link : " + link );
+            LOG.error( "Unknown error validating link : " + url );
             return null;
         }
 
@@ -392,17 +393,17 @@ public final class OnlineHTTPLinkValidator
             {
                 if ( newLink.startsWith( "/" ) )
                 {
-                    URL oldUrl = new URL( link );
+                    URL oldUrl = new URL( url );
                     newLink = oldUrl.getProtocol() + "://" + oldUrl.getHost()
                             + ( oldUrl.getPort() > 0 ? ":" + oldUrl.getPort() : "" ) + newLink;
                 }
                 else
                 {
-                    newLink = link + newLink;
+                    newLink = url + newLink;
                 }
             }
 
-            LOG.debug( "[" + link + "] is redirected to [" + newLink + "]" );
+            LOG.debug( "[" + url + "] is redirected to [" + newLink + "]" );
 
             HttpResponse oldResponse = response;
             response = checkLink( newLink, nbRedirect + 1 );
