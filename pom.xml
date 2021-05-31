@@ -112,41 +112,5 @@ under the License.
         </plugin>
       </plugins>
     </pluginManagement>
-    <plugins>
-      <plugin>
-        <groupId>org.codehaus.modello</groupId>
-        <artifactId>modello-maven-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>linkcheck</id>
-            <phase>generate-sources</phase>
-            <goals>
-              <goal>java</goal>
-              <goal>xpp3-reader</goal>
-              <goal>xpp3-writer</goal>
-            </goals>
-            <configuration>
-              <models>
-                <model>src/main/mdo/linkcheck.mdo</model>
-              </models>
-              <version>1.0.0</version>
-            </configuration>
-          </execution>
-          <execution>
-            <id>httpbean</id>
-            <phase>generate-sources</phase>
-            <goals>
-              <goal>java</goal>
-            </goals>
-            <configuration>
-              <models>
-                <model>src/main/mdo/httpbean.mdo</model>
-              </models>
-              <version>1.0.0</version>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-    </plugins>
   </build>
 </project>
