@@ -23,35 +23,34 @@ import java.io.IOException;
 
 import java.net.URL;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
-import org.apache.http.Header;
-import org.apache.http.HttpException;
-import org.apache.http.HttpHost;
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.StatusLine;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.Credentials;
-import org.apache.http.auth.NTCredentials;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.CredentialsProvider;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpHead;
+import org.apache.hc.client5.http.auth.Credentials;
+import org.apache.hc.client5.http.auth.NTCredentials;
+import org.apache.hc.client5.http.auth.UsernamePasswordCredentials;
+import org.apache.hc.client5.http.classic.HttpClient;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.config.SocketConfig;
-import org.apache.http.impl.client.BasicCredentialsProvider;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
-import org.apache.http.util.EntityUtils;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.classic.methods.HttpHead;
+import org.apache.hc.client5.http.classic.methods.HttpUriRequest;
+import org.apache.hc.client5.http.config.RequestConfig;
+import org.apache.hc.client5.http.impl.auth.BasicCredentialsProvider;
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
+import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.core5.http.Header;
+import org.apache.hc.core5.http.HttpException;
+import org.apache.hc.core5.http.HttpHost;
+import org.apache.hc.core5.http.HttpStatus;
+import org.apache.hc.core5.http.ParseException;
+import org.apache.hc.core5.http.io.SocketConfig;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.maven.doxia.linkcheck.HttpBean;
 import org.apache.maven.doxia.linkcheck.model.LinkcheckFileResult;
 import org.codehaus.plexus.util.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Checks links which are normal URLs.
@@ -64,7 +63,7 @@ public final class OnlineHTTPLinkValidator
     extends HTTPLinkValidator
 {
     /** Log for debug output. */
-    private static final Log LOG = LogFactory.getLog( OnlineHTTPLinkValidator.class );
+    private static final Logger LOG = LoggerFactory.getLogger( OnlineHTTPLinkValidator.class );
 
     /** The maximum number of redirections for a link. */
     private static final int MAX_NB_REDIRECT = 10;
@@ -170,7 +169,7 @@ public final class OnlineHTTPLinkValidator
                 link = getBaseURL() + link;
             }
 
-            HttpResponse response = null;
+            ClassicHttpResponse response;
             try
             {
                 response = checkLink( link, 0 );
@@ -189,7 +188,7 @@ public final class OnlineHTTPLinkValidator
                                                  "Cannot retrieve HTTP Status" );
             }
 
-            int statusCode = response.getStatusLine().getStatusCode();
+            int statusCode = response.getCode();
             if ( statusCode == HttpStatus.SC_OK )
             {
                 // check if the anchor is present
@@ -204,7 +203,7 @@ public final class OnlineHTTPLinkValidator
                     }
                 }
                 return new HTTPLinkValidationResult( LinkcheckFileResult.VALID_LEVEL, true,
-                        statusCode, response.getStatusLine().getReasonPhrase() );
+                        statusCode, response.getReasonPhrase() );
             }
 
             String msg = "Received: [" + statusCode + "] for [" + link + "] in page ["
@@ -217,15 +216,15 @@ public final class OnlineHTTPLinkValidator
                 LOG.warn( msg );
 
                 return new HTTPLinkValidationResult( LinkcheckFileResult.WARNING_LEVEL, true, statusCode,
-                        response.getStatusLine().getReasonPhrase() );
+                        response.getReasonPhrase() );
             }
 
             LOG.debug( msg );
 
             return new HTTPLinkValidationResult( LinkcheckFileResult.ERROR_LEVEL, false, statusCode,
-                    response.getStatusLine().getReasonPhrase() );
+                    response.getReasonPhrase() );
         }
-        catch ( IOException ex )
+        catch ( IOException | ParseException ex )
         {
             String msg = "Received: [" + ex + "] for [" + link + "] in page [" + lvi.getSource() + "]";
             LOG.error( msg, ex );
@@ -268,13 +267,13 @@ public final class OnlineHTTPLinkValidator
         SocketConfig.Builder socketConfigBuilder = SocketConfig.custom();
         if ( this.http.getTimeout() != 0 )
         {
-            requestConfigBuilder.setConnectTimeout( this.http.getTimeout() );
-            requestConfigBuilder.setSocketTimeout( this.http.getTimeout() );
-            socketConfigBuilder.setSoTimeout( this.http.getTimeout() );
+            requestConfigBuilder.setConnectTimeout( this.http.getTimeout(), TimeUnit.MILLISECONDS );
+//            requestConfigBuilder.setSocketTimeout( this.http.getTimeout() );
+            socketConfigBuilder.setSoTimeout( this.http.getTimeout(), TimeUnit.MILLISECONDS );
         }
 
         builder.setDefaultRequestConfig( requestConfigBuilder.build() );
-        builder.setDefaultSocketConfig( socketConfigBuilder.build() );
+//        builder.setDefaultSocketConfig( socketConfigBuilder.build() );
 
         // proxy
         if ( StringUtils.isNotBlank( this.http.getProxyHost() ) )
@@ -291,16 +290,18 @@ public final class OnlineHTTPLinkValidator
                 Credentials credentials;
                 if ( StringUtils.isNotEmpty( this.http.getProxyNtlmHost() ) )
                 {
-                    credentials = new NTCredentials( this.http.getProxyUser(), this.http.getProxyPassword(),
+                    credentials = new NTCredentials( this.http.getProxyUser(),
+                            this.http.getProxyPassword().toCharArray(),
                             this.http.getProxyNtlmHost(), this.http.getProxyNtlmDomain() );
                 }
                 else
                 {
                     credentials =
-                        new UsernamePasswordCredentials( this.http.getProxyUser(), this.http.getProxyPassword() );
+                        new UsernamePasswordCredentials( this.http.getProxyUser(),
+                                this.http.getProxyPassword().toCharArray() );
                 }
-                CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
-                credentialsProvider.setCredentials( AuthScope.ANY, credentials );
+                BasicCredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+                credentialsProvider.setCredentials( null, credentials );
                 builder.setDefaultCredentialsProvider( credentialsProvider );
             }
         }
@@ -317,7 +318,7 @@ public final class OnlineHTTPLinkValidator
      * @param nbRedirect the number of current redirects
      * @throws IOException if something goes wrong
      */
-    private HttpResponse checkLink( String url, int nbRedirect )
+    private ClassicHttpResponse checkLink( String url, int nbRedirect )
             throws IOException, HttpException
     {
 
@@ -364,16 +365,9 @@ public final class OnlineHTTPLinkValidator
             throw new HttpException( "Invalid URL " + url, ex );
         }
 
-        HttpResponse response = cl.execute( request );
+        ClassicHttpResponse response = (ClassicHttpResponse) cl.execute( request );
 
-        StatusLine statusLine = response.getStatusLine();
-        if ( statusLine == null )
-        {
-            LOG.error( "Unknown error validating link : " + url );
-            return null;
-        }
-
-        int statusCode = response.getStatusLine().getStatusCode();
+        int statusCode = response.getCode();
         if ( statusCode == HttpStatus.SC_MOVED_PERMANENTLY
                 || statusCode == HttpStatus.SC_MOVED_TEMPORARILY
                 || statusCode == HttpStatus.SC_TEMPORARY_REDIRECT )
@@ -405,7 +399,7 @@ public final class OnlineHTTPLinkValidator
 
             LOG.debug( "[" + url + "] is redirected to [" + newLink + "]" );
 
-            HttpResponse oldResponse = response;
+            ClassicHttpResponse oldResponse = response;
             response = checkLink( newLink, nbRedirect + 1 );
 
             // Restore the status to "Moved permanently" | "Moved temporarily" | "Temporary redirect"

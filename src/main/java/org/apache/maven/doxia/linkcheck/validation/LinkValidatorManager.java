@@ -19,11 +19,11 @@ package org.apache.maven.doxia.linkcheck.validation;
  * under the License.
  */
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.maven.doxia.linkcheck.model.LinkcheckFileResult;
 import org.codehaus.plexus.util.SelectorUtils;
 import org.codehaus.plexus.util.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -57,7 +57,7 @@ public class LinkValidatorManager
     private static final long serialVersionUID = 2467928182206500945L;
 
     /** Log for debug output. */
-    private static final Log LOG = LogFactory.getLog( LinkValidatorManager.class );
+    private static final Logger LOG = LoggerFactory.getLogger( LinkValidatorManager.class );
 
     /** validators. */
     private List<LinkValidator> validators = new LinkedList<>();

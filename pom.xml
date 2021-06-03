@@ -62,18 +62,17 @@ under the License.
   </properties>
 
   <dependencies>
-    <!-- compile dependencies -->
     <dependency>
-      <groupId>org.apache.httpcomponents</groupId>
-      <artifactId>httpclient</artifactId>
-      <version>4.5.13</version>
+      <groupId>org.apache.httpcomponents.client5</groupId>
+      <artifactId>httpclient5</artifactId>
+      <version>5.1</version>
     </dependency>
     <dependency>
-      <groupId>commons-logging</groupId>
-      <artifactId>commons-logging</artifactId>
-      <version>1.2</version>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-simple</artifactId>
+      <version>1.7.25</version><!-- hc version -->
+      <scope>test</scope>
     </dependency>
-
     <!-- Plexus -->
     <dependency>
       <groupId>org.codehaus.plexus</groupId>
