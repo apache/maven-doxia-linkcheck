@@ -157,7 +157,6 @@ under the License.
     /**
      * Get the number of links for this file.
      *
-     * @param level
      * @return
      */
     public int getNumberOfLinks()

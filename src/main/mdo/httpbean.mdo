@@ -68,7 +68,7 @@ under the License.
           <name>followRedirects</name>
           <description><![CDATA[
      if the HTTP method should automatically follow HTTP redirects
-     (status code 302, etc.), <tt>false</tt> otherwise.]]></description>
+     (status code 302, etc.), <code>false</code> otherwise.]]></description>
           <version>1.0.0</version>
           <identifier>true</identifier>
           <type>boolean</type>
@@ -149,7 +149,7 @@ under the License.
 
     /**
      * @return the extra HttpClient parameters
-     * @see http://hc.apache.org/httpclient-3.x/preference-api.html
+     * @see <a href="http://hc.apache.org/httpclient-3.x/preference-api.html">preference-api.html</a>
      */
     public java.util.Properties getHttpClientParameters()
     {
@@ -158,7 +158,7 @@ under the License.
 
     /**
      * @param httpClientParameters the extra HttpClient parameters to set
-     * @see http://hc.apache.org/httpclient-3.x/preference-api.html
+     * @see <a href="http://hc.apache.org/httpclient-3.x/preference-api.html">preference-api.html</a>
      */
     public void setHttpClientParameters( java.util.Properties httpClientParameters )
     {
