@@ -27,7 +27,6 @@ import java.util.Locale;
 import org.apache.maven.doxia.linkcheck.model.LinkcheckFileResult;
 import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.ReaderFactory;
-import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.WriterFactory;
 
 /**
@@ -46,7 +45,7 @@ public final class FileLinkValidator
      */
     public FileLinkValidator( String encoding )
     {
-        if ( StringUtils.isEmpty( encoding ) )
+        if ( encoding == null || encoding.isEmpty() )
         {
             encoding = WriterFactory.UTF_8;
         }

@@ -322,9 +322,9 @@ public class LinkValidatorManager
      */
     protected static boolean matchPattern( String link, String pattern )
     {
-        if ( StringUtils.isEmpty( pattern ) )
+        if ( pattern == null || pattern.isEmpty() )
         {
-            return StringUtils.isEmpty( link );
+            return link == null || link.isEmpty();
         }
 
         if ( pattern.indexOf( '*' ) == -1 )
