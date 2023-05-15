@@ -272,7 +272,7 @@ public final class DefaultLinkCheck
     @Override
     public void setEncoding( String encoding )
     {
-        if ( StringUtils.isEmpty( encoding ) )
+        if ( encoding == null || encoding.isEmpty() )
         {
             throw new IllegalArgumentException( "encoding is required" );
         }
