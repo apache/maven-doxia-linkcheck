@@ -61,7 +61,7 @@ public class LinkCheckTest
 
         LinkcheckModel result = lc.execute();
 
-        Map<String, LinkcheckFile> map = new HashMap<String, LinkcheckFile>();
+        Map<String, LinkcheckFile> map = new HashMap<>();
 
         for ( LinkcheckFile ftc : result.getFiles() )
         {
