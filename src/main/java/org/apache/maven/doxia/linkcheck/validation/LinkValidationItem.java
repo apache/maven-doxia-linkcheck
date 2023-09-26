@@ -91,7 +91,7 @@ public class LinkValidationItem
             return false;
         }
 
-        return lvi.source.equals(this.source);
+        return lvi.source.equals( this.source );
     }
 
     /** {@inheritDoc} */
