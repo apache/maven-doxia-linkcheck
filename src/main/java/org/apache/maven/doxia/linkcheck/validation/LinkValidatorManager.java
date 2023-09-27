@@ -247,7 +247,7 @@ public class LinkValidatorManager
         }
 
         // Remove non-persistent items from cache
-        Map<Object, LinkValidationResult> persistentCache = new HashMap<Object, LinkValidationResult>();
+        Map<Object, LinkValidationResult> persistentCache = new HashMap<>();
 
         for ( Map.Entry<Object, LinkValidationResult> resource : this.cache.entrySet() )
         {

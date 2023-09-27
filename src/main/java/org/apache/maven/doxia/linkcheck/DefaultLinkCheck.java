@@ -214,7 +214,7 @@ public final class DefaultLinkCheck
 
         LinkcheckModel model = new LinkcheckModel();
         model.setModelEncoding( reportOutputEncoding );
-        model.setFiles( new LinkedList<LinkcheckFile>() );
+        model.setFiles( new LinkedList<>() );
 
         displayMemoryConsumption();
 
@@ -321,7 +321,7 @@ public final class DefaultLinkCheck
      */
     private String getExcludedPages()
     {
-        LinkedList<String> patternList = new LinkedList<String>( FileUtils.getDefaultExcludesAsList() );
+        LinkedList<String> patternList = new LinkedList<>( FileUtils.getDefaultExcludesAsList() );
 
         if ( excludedPages != null )
         {
